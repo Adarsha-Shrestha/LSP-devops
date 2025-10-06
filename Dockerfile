@@ -6,6 +6,7 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
+COPY nonexistent-file.txt /app/
 
 # Install dependencies
 RUN npm install
