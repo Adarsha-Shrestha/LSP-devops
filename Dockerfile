@@ -1,5 +1,5 @@
 #use node 22 image as base image
-FROM node:22-fake-tag
+FROM node:22
 
 # Set working directory in container
 WORKDIR /app
