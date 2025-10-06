@@ -30,23 +30,27 @@ jobs:
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
+      - name: Convert username to lowercase
+        id: lowercase
+        run: echo "REPO_OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
       - name: Build Docker image (using Dockerfile.prod)
         run: |
-          docker build -f Dockerfile.prod -t ghcr.io/${{ github.repository_owner }}/devops-app:${{ steps.get_version.outputs.VERSION }} .
-          docker tag ghcr.io/${{ github.repository_owner }}/devops-app:${{ steps.get_version.outputs.VERSION }} ghcr.io/${{ github.repository_owner }}/devops-app:latest
+          docker build -f Dockerfile.prod -t ghcr.io/${{ steps.lowercase.outputs.REPO_OWNER }}/devops-app:${{ steps.get_version.outputs.VERSION }} .
+          docker tag ghcr.io/${{ steps.lowercase.outputs.REPO_OWNER }}/devops-app:${{ steps.get_version.outputs.VERSION }} ghcr.io/${{ steps.lowercase.outputs.REPO_OWNER }}/devops-app:latest
 
       - name: Scan image with Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ghcr.io/${{ github.repository_owner }}/devops-app:${{ steps.get_version.outputs.VERSION }}
+          image-ref: ghcr.io/${{ steps.lowercase.outputs.REPO_OWNER }}/devops-app:${{ steps.get_version.outputs.VERSION }}
           format: "table"
           exit-code: "1"
           severity: "CRITICAL,HIGH"
 
       - name: Push Docker image
         run: |
-          docker push ghcr.io/${{ github.repository_owner }}/devops-app:${{ steps.get_version.outputs.VERSION }}
-          docker push ghcr.io/${{ github.repository_owner }}/devops-app:latest
+          docker push ghcr.io/${{ steps.lowercase.outputs.REPO_OWNER }}/devops-app:${{ steps.get_version.outputs.VERSION }}
+          docker push ghcr.io/${{ steps.lowercase.outputs.REPO_OWNER }}/devops-app:latest
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
